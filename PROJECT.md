@@ -2,7 +2,7 @@
 
 **What:** Project-scoped coordination ledger for collaborating AI agents.
 
-**Status:** Skeleton complete — compiles, CLI routes, DB layer with migrations, claims/tasks/notes fully implemented. Decisions, contracts, context/status are stubs awaiting Bjarn.
+**Status:** MVP surfaces implemented — compiles, CLI routes, DB layer with migrations, claims/tasks/notes/events, decisions/contracts, and status/context aggregators are implemented. Full integration suite passes.
 
 **Tech:** Rust 2021, clap 4, rusqlite (bundled SQLite), serde/serde_json, chrono, ulid, thiserror, whoami.
 
@@ -18,9 +18,9 @@
 | claims.rs | Nix | Done |
 | tasks.rs | Nix | Done |
 | notes.rs | Nix | Done |
-| decisions.rs | Bjarn | Stub |
-| contracts.rs | Bjarn | Stub |
-| context.rs | Bjarn | Stub |
+| decisions.rs | Bjarn | Done |
+| contracts.rs | Bjarn | Done |
+| context.rs | Bjarn | Done |
 | output.rs | Shared | Minimal |
 
 ## Build
@@ -41,4 +41,4 @@ cargo test
 
 ## Last Updated
 
-2026-06-21 — Initial skeleton commit (Nix)
+2026-06-21 — MVP implementation complete; `cargo test` passes with 21 integration tests.
