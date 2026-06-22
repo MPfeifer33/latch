@@ -54,7 +54,7 @@ fn run(cli: &Cli) -> Result<(), LatchError> {
             let repo = cli.resolve_repo()?;
             let conn = db::open_workspace(&repo)?;
             let actor_resolved = actor.clone().or_else(|| Some(cli.resolve_actor()));
-            context::show_context(&conn, actor_resolved.as_deref(), cli.is_json())?;
+            context::show_context(&conn, &repo, actor_resolved.as_deref(), cli.context_is_json())?;
             Ok(())
         }
         Command::Claim(cmd) => claims::handle(cmd, cli),

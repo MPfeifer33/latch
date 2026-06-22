@@ -15,8 +15,8 @@ pub struct Cli {
     pub actor: Option<String>,
 
     /// Output format
-    #[arg(long, global = true, default_value = "json")]
-    pub format: OutputFormat,
+    #[arg(long, global = true)]
+    pub format: Option<OutputFormat>,
 
     #[command(subcommand)]
     pub command: Command,
@@ -52,7 +52,12 @@ impl Cli {
     }
 
     pub fn is_json(&self) -> bool {
-        matches!(self.format, OutputFormat::Json)
+        !matches!(self.format, Some(OutputFormat::Text))
+    }
+
+    #[allow(dead_code)]
+    pub fn context_is_json(&self) -> bool {
+        matches!(self.format, Some(OutputFormat::Json))
     }
 }
 
