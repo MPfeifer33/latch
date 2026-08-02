@@ -4,7 +4,11 @@ use std::path::PathBuf;
 use crate::LatchError;
 
 #[derive(Parser, Debug)]
-#[command(name = "latch", version, about = "Project-scoped coordination ledger for collaborating agents")]
+#[command(
+    name = "latch",
+    version,
+    about = "Project-scoped coordination ledger for collaborating agents"
+)]
 pub struct Cli {
     /// Project root override
     #[arg(long, global = true)]
@@ -38,7 +42,7 @@ impl Cli {
             }
         }
         // Fall back to cwd
-        std::env::current_dir().map_err(|e| LatchError::Io(e))
+        std::env::current_dir().map_err(LatchError::Io)
     }
 
     pub fn resolve_actor(&self) -> String {
@@ -181,8 +185,8 @@ pub enum ContractCommand {
         name: String,
         /// Contract version
         version: String,
-        #[arg(long)]
-        format: Option<String>,
+        #[arg(long = "body-format")]
+        contract_format: Option<String>,
         #[arg(long)]
         body: Option<String>,
         #[arg(long = "body-file")]

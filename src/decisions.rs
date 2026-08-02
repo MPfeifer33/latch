@@ -66,6 +66,7 @@ fn parse_json_array(raw: String) -> serde_json::Value {
     serde_json::from_str::<serde_json::Value>(&raw).unwrap_or_else(|_| json!([]))
 }
 
+#[allow(clippy::too_many_arguments)]
 fn add(
     conn: &Connection,
     repo_id: &str,
@@ -169,7 +170,11 @@ fn show(conn: &Connection, id: &str, is_json: bool) -> Result<(), LatchError> {
     if is_json {
         output::print_json_value(json!({ "ok": true, "decision": decision }))?;
     } else {
-        println!("{} {}", decision["id"].as_str().unwrap_or(""), decision["title"].as_str().unwrap_or(""));
+        println!(
+            "{} {}",
+            decision["id"].as_str().unwrap_or(""),
+            decision["title"].as_str().unwrap_or("")
+        );
         println!("status: {}", decision["status"].as_str().unwrap_or(""));
         println!("created: {}", decision["created_at"].as_str().unwrap_or(""));
         if let Some(superseded_by) = decision["superseded_by"].as_str() {
@@ -186,6 +191,7 @@ fn show(conn: &Connection, id: &str, is_json: bool) -> Result<(), LatchError> {
     Ok(())
 }
 
+#[allow(clippy::too_many_arguments)]
 fn supersede(
     conn: &Connection,
     repo_id: &str,

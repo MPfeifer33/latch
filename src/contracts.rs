@@ -17,7 +17,7 @@ pub fn handle(cmd: &ContractCommand, cli: &Cli) -> Result<(), LatchError> {
         ContractCommand::Set {
             name,
             version,
-            format,
+            contract_format,
             body,
             body_file,
             owner,
@@ -28,7 +28,7 @@ pub fn handle(cmd: &ContractCommand, cli: &Cli) -> Result<(), LatchError> {
             &actor,
             name,
             version,
-            format.as_deref(),
+            contract_format.as_deref(),
             body.as_deref(),
             body_file.as_deref(),
             owner.as_deref(),
@@ -36,7 +36,9 @@ pub fn handle(cmd: &ContractCommand, cli: &Cli) -> Result<(), LatchError> {
             cli.is_json(),
         ),
         ContractCommand::List => list(&conn, cli.is_json()),
-        ContractCommand::Get { name, version } => get(&conn, name, version.as_deref(), cli.is_json()),
+        ContractCommand::Get { name, version } => {
+            get(&conn, name, version.as_deref(), cli.is_json())
+        }
     }
 }
 
@@ -61,6 +63,7 @@ fn body_value(format: &str, body: &str) -> Result<serde_json::Value, LatchError>
     Ok(json!(body))
 }
 
+#[allow(clippy::too_many_arguments)]
 fn set(
     conn: &Connection,
     repo_id: &str,
@@ -188,7 +191,12 @@ fn list(conn: &Connection, is_json: bool) -> Result<(), LatchError> {
     Ok(())
 }
 
-fn get(conn: &Connection, name: &str, version: Option<&str>, is_json: bool) -> Result<(), LatchError> {
+fn get(
+    conn: &Connection,
+    name: &str,
+    version: Option<&str>,
+    is_json: bool,
+) -> Result<(), LatchError> {
     let contract = if let Some(version) = version {
         load_contract(
             conn,

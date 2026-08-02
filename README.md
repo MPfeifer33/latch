@@ -134,6 +134,7 @@ ownership agreements.
 
 ```sh
 latch contract set validation-result v1 \
+  --body-format json \
   --body-file validation-result.v1.json \
   --consumer bjarn \
   --owner nix
@@ -213,6 +214,9 @@ latch events show <event-id>
 ## Design Notes
 
 The full design draft is in [docs/SPEC.md](docs/SPEC.md).
+Switchboard integration notes are in [docs/SWITCHBOARD-INTEGRATION.md](docs/SWITCHBOARD-INTEGRATION.md);
+the canonical cross-project plan lives at
+`/home/mpfeifer/projects/switchboard/docs/LATCH-INTEGRATION-PLAN.md`.
 
 Important MVP choices:
 

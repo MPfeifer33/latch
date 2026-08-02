@@ -374,7 +374,7 @@ latch decision supersede decision_01JZ... --title "Validation result v2" --body-
 ### contracts
 
 ```sh
-latch contract set validation-result v1 --format json --body-file validation-result.v1.json --consumer bjarn --owner nix
+latch contract set validation-result v1 --body-format json --body-file validation-result.v1.json --consumer bjarn --owner nix
 latch contract list
 latch contract get validation-result v1
 ```

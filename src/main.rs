@@ -1,13 +1,13 @@
-mod cli;
-mod db;
-mod events;
 mod claims;
-mod tasks;
-mod notes;
-mod decisions;
-mod contracts;
+mod cli;
 mod context;
+mod contracts;
+mod db;
+mod decisions;
+mod events;
+mod notes;
 mod output;
+mod tasks;
 
 use clap::Parser;
 use cli::{Cli, Command};
@@ -27,7 +27,12 @@ fn main() {
                         "message": e.to_string(),
                     }
                 });
-                eprintln!("{}", serde_json::to_string_pretty(&err_json).unwrap_or_else(|_| format!("{{\"ok\":false,\"error\":{{\"message\":\"{e}\"}}}}")));
+                eprintln!(
+                    "{}",
+                    serde_json::to_string_pretty(&err_json).unwrap_or_else(|_| format!(
+                        "{{\"ok\":false,\"error\":{{\"message\":\"{e}\"}}}}"
+                    ))
+                );
             } else {
                 eprintln!("error: {e}");
             }
@@ -54,7 +59,12 @@ fn run(cli: &Cli) -> Result<(), LatchError> {
             let repo = cli.resolve_repo()?;
             let conn = db::open_workspace(&repo)?;
             let actor_resolved = actor.clone().or_else(|| Some(cli.resolve_actor()));
-            context::show_context(&conn, &repo, actor_resolved.as_deref(), cli.context_is_json())?;
+            context::show_context(
+                &conn,
+                &repo,
+                actor_resolved.as_deref(),
+                cli.context_is_json(),
+            )?;
             Ok(())
         }
         Command::Claim(cmd) => claims::handle(cmd, cli),

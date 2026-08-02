@@ -20,7 +20,14 @@ pub fn handle(cmd: &NoteCommand, cli: &Cli) -> Result<(), LatchError> {
     }
 }
 
-fn add(conn: &Connection, repo_id: &str, actor: &str, kind: &str, body: &str, is_json: bool) -> Result<(), LatchError> {
+fn add(
+    conn: &Connection,
+    repo_id: &str,
+    actor: &str,
+    kind: &str,
+    body: &str,
+    is_json: bool,
+) -> Result<(), LatchError> {
     let valid_kinds = ["hazard", "handoff", "observation"];
     if !valid_kinds.contains(&kind) {
         return Err(LatchError::Validation(format!(
@@ -37,16 +44,28 @@ fn add(conn: &Connection, repo_id: &str, actor: &str, kind: &str, body: &str, is
         rusqlite::params![id, kind, body, actor, now],
     )?;
 
-    db::append_event(conn, repo_id, actor, "note.added", "note", &id, None, json!({
-        "kind": kind,
-        "body": body,
-    }))?;
+    db::append_event(
+        conn,
+        repo_id,
+        actor,
+        "note.added",
+        "note",
+        &id,
+        None,
+        json!({
+            "kind": kind,
+            "body": body,
+        }),
+    )?;
 
     if is_json {
-        println!("{}", serde_json::to_string_pretty(&json!({
-            "ok": true,
-            "note": { "id": id, "kind": kind }
-        }))?);
+        println!(
+            "{}",
+            serde_json::to_string_pretty(&json!({
+                "ok": true,
+                "note": { "id": id, "kind": kind }
+            }))?
+        );
     } else {
         println!("Note added: [{kind}] {id}");
     }
@@ -68,24 +87,31 @@ fn list(conn: &Connection, kind: Option<&str>, is_json: bool) -> Result<(), Latc
 
     let mut stmt = conn.prepare(&query)?;
     let param_refs: Vec<&dyn rusqlite::types::ToSql> = params.iter().map(|p| p.as_ref()).collect();
-    let notes: Vec<serde_json::Value> = stmt.query_map(param_refs.as_slice(), |row| {
-        Ok(json!({
-            "id": row.get::<_, String>(0)?,
-            "kind": row.get::<_, String>(1)?,
-            "body": row.get::<_, String>(2)?,
-            "author": row.get::<_, String>(3)?,
-            "created_at": row.get::<_, String>(4)?,
-        }))
-    })?.filter_map(|r| r.ok()).collect();
+    let notes: Vec<serde_json::Value> = stmt
+        .query_map(param_refs.as_slice(), |row| {
+            Ok(json!({
+                "id": row.get::<_, String>(0)?,
+                "kind": row.get::<_, String>(1)?,
+                "body": row.get::<_, String>(2)?,
+                "author": row.get::<_, String>(3)?,
+                "created_at": row.get::<_, String>(4)?,
+            }))
+        })?
+        .filter_map(|r| r.ok())
+        .collect();
 
     if is_json {
-        println!("{}", serde_json::to_string_pretty(&json!({ "ok": true, "notes": notes }))?);
+        println!(
+            "{}",
+            serde_json::to_string_pretty(&json!({ "ok": true, "notes": notes }))?
+        );
     } else {
         if notes.is_empty() {
             println!("No notes.");
         } else {
             for n in &notes {
-                println!("  [{}] {}: {}",
+                println!(
+                    "  [{}] {}: {}",
                     n["kind"].as_str().unwrap_or(""),
                     n["id"].as_str().unwrap_or(""),
                     n["body"].as_str().unwrap_or(""),
@@ -96,17 +122,35 @@ fn list(conn: &Connection, kind: Option<&str>, is_json: bool) -> Result<(), Latc
     Ok(())
 }
 
-fn remove(conn: &Connection, repo_id: &str, actor: &str, id: &str, is_json: bool) -> Result<(), LatchError> {
+fn remove(
+    conn: &Connection,
+    repo_id: &str,
+    actor: &str,
+    id: &str,
+    is_json: bool,
+) -> Result<(), LatchError> {
     let rows = conn.execute("DELETE FROM notes WHERE id = ?1", [id])?;
 
     if rows == 0 {
         return Err(LatchError::NotFound(format!("Note {id} not found")));
     }
 
-    db::append_event(conn, repo_id, actor, "note.removed", "note", id, None, json!({}))?;
+    db::append_event(
+        conn,
+        repo_id,
+        actor,
+        "note.removed",
+        "note",
+        id,
+        None,
+        json!({}),
+    )?;
 
     if is_json {
-        println!("{}", serde_json::to_string_pretty(&json!({ "ok": true, "removed": id }))?);
+        println!(
+            "{}",
+            serde_json::to_string_pretty(&json!({ "ok": true, "removed": id }))?
+        );
     } else {
         println!("Note {id} removed.");
     }

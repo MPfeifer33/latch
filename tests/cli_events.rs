@@ -21,7 +21,10 @@ fn events_list_shows_init_event() {
     let dir = tmp.path();
     init_workspace(dir);
 
-    let output = latch(dir).args(["events", "list", "--limit", "10"]).output().unwrap();
+    let output = latch(dir)
+        .args(["events", "list", "--limit", "10"])
+        .output()
+        .unwrap();
     assert!(output.status.success());
     let stdout = String::from_utf8_lossy(&output.stdout);
     let json: serde_json::Value = serde_json::from_str(&stdout).unwrap();
@@ -37,11 +40,23 @@ fn events_accumulate_from_operations() {
     init_workspace(dir);
 
     // Perform some operations
-    latch(dir).args(["claim", "acquire", "file.rs", "--ttl", "1h"]).output().unwrap();
-    latch(dir).args(["note", "add", "--kind", "hazard", "--body", "watch out"]).output().unwrap();
-    latch(dir).args(["task", "add", "--to", "bjarn", "--title", "do thing"]).output().unwrap();
+    latch(dir)
+        .args(["claim", "acquire", "file.rs", "--ttl", "1h"])
+        .output()
+        .unwrap();
+    latch(dir)
+        .args(["note", "add", "--kind", "hazard", "--body", "watch out"])
+        .output()
+        .unwrap();
+    latch(dir)
+        .args(["task", "add", "--to", "bjarn", "--title", "do thing"])
+        .output()
+        .unwrap();
 
-    let output = latch(dir).args(["events", "list", "--limit", "50"]).output().unwrap();
+    let output = latch(dir)
+        .args(["events", "list", "--limit", "50"])
+        .output()
+        .unwrap();
     assert!(output.status.success());
     let stdout = String::from_utf8_lossy(&output.stdout);
     let json: serde_json::Value = serde_json::from_str(&stdout).unwrap();
@@ -64,13 +79,19 @@ fn events_show_by_id() {
     init_workspace(dir);
 
     // Get the init event ID
-    let output = latch(dir).args(["events", "list", "--limit", "1"]).output().unwrap();
+    let output = latch(dir)
+        .args(["events", "list", "--limit", "1"])
+        .output()
+        .unwrap();
     let stdout = String::from_utf8_lossy(&output.stdout);
     let json: serde_json::Value = serde_json::from_str(&stdout).unwrap();
     let event_id = json["events"][0]["id"].as_str().unwrap().to_string();
 
     // Show it
-    let output = latch(dir).args(["events", "show", &event_id]).output().unwrap();
+    let output = latch(dir)
+        .args(["events", "show", &event_id])
+        .output()
+        .unwrap();
     assert!(output.status.success());
     let stdout = String::from_utf8_lossy(&output.stdout);
     let json: serde_json::Value = serde_json::from_str(&stdout).unwrap();
@@ -85,6 +106,9 @@ fn events_show_nonexistent_fails() {
     let dir = tmp.path();
     init_workspace(dir);
 
-    let output = latch(dir).args(["events", "show", "nonexistent-id"]).output().unwrap();
+    let output = latch(dir)
+        .args(["events", "show", "nonexistent-id"])
+        .output()
+        .unwrap();
     assert_eq!(output.status.code(), Some(3)); // not found
 }

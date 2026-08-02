@@ -12,7 +12,11 @@ fn latch(dir: &std::path::Path) -> Command {
 
 fn init_workspace(dir: &std::path::Path) {
     let output = latch(dir).arg("init").output().unwrap();
-    assert!(output.status.success(), "init failed: {}", String::from_utf8_lossy(&output.stderr));
+    assert!(
+        output.status.success(),
+        "init failed: {}",
+        String::from_utf8_lossy(&output.stderr)
+    );
 }
 
 #[test]
@@ -38,9 +42,22 @@ fn claim_acquire_and_list() {
 
     // Acquire a claim
     let output = latch(dir)
-        .args(["claim", "acquire", "src/main.rs", "--intent", "refactoring", "--ttl", "1h"])
-        .output().unwrap();
-    assert!(output.status.success(), "acquire failed: {}", String::from_utf8_lossy(&output.stderr));
+        .args([
+            "claim",
+            "acquire",
+            "src/main.rs",
+            "--intent",
+            "refactoring",
+            "--ttl",
+            "1h",
+        ])
+        .output()
+        .unwrap();
+    assert!(
+        output.status.success(),
+        "acquire failed: {}",
+        String::from_utf8_lossy(&output.stderr)
+    );
 
     let stdout = String::from_utf8_lossy(&output.stdout);
     let json: serde_json::Value = serde_json::from_str(&stdout).unwrap();
@@ -65,14 +82,18 @@ fn claim_conflict_on_same_file() {
     // First claim
     let output = latch(dir)
         .args(["claim", "acquire", "src/lib.rs", "--ttl", "2h"])
-        .output().unwrap();
+        .output()
+        .unwrap();
     assert!(output.status.success());
 
     // Second claim on same file (different actor)
     let mut cmd = Command::new(env!("CARGO_BIN_EXE_latch"));
     cmd.arg("--repo").arg(dir);
     cmd.arg("--actor").arg("other-agent");
-    let output = cmd.args(["claim", "acquire", "src/lib.rs", "--ttl", "1h"]).output().unwrap();
+    let output = cmd
+        .args(["claim", "acquire", "src/lib.rs", "--ttl", "1h"])
+        .output()
+        .unwrap();
 
     // Should fail with exit code 2 (claim conflict)
     assert_eq!(output.status.code(), Some(2));
@@ -86,15 +107,27 @@ fn claim_directory_conflicts_with_child_file() {
 
     // Claim a directory
     let output = latch(dir)
-        .args(["claim", "acquire", "src/", "--intent", "restructure", "--ttl", "2h"])
-        .output().unwrap();
+        .args([
+            "claim",
+            "acquire",
+            "src/",
+            "--intent",
+            "restructure",
+            "--ttl",
+            "2h",
+        ])
+        .output()
+        .unwrap();
     assert!(output.status.success());
 
     // Claim a file inside that directory (different actor)
     let mut cmd = Command::new(env!("CARGO_BIN_EXE_latch"));
     cmd.arg("--repo").arg(dir);
     cmd.arg("--actor").arg("other-agent");
-    let output = cmd.args(["claim", "acquire", "src/main.rs", "--ttl", "1h"]).output().unwrap();
+    let output = cmd
+        .args(["claim", "acquire", "src/main.rs", "--ttl", "1h"])
+        .output()
+        .unwrap();
 
     assert_eq!(output.status.code(), Some(2));
 }
@@ -108,7 +141,8 @@ fn claim_release_allows_reacquire() {
     // Acquire
     let output = latch(dir)
         .args(["claim", "acquire", "README.md", "--ttl", "1h"])
-        .output().unwrap();
+        .output()
+        .unwrap();
     assert!(output.status.success());
     let stdout = String::from_utf8_lossy(&output.stdout);
     let json: serde_json::Value = serde_json::from_str(&stdout).unwrap();
@@ -117,14 +151,18 @@ fn claim_release_allows_reacquire() {
     // Release
     let output = latch(dir)
         .args(["claim", "release", &claim_id])
-        .output().unwrap();
+        .output()
+        .unwrap();
     assert!(output.status.success());
 
     // Re-acquire by different actor should succeed
     let mut cmd = Command::new(env!("CARGO_BIN_EXE_latch"));
     cmd.arg("--repo").arg(dir);
     cmd.arg("--actor").arg("other-agent");
-    let output = cmd.args(["claim", "acquire", "README.md", "--ttl", "1h"]).output().unwrap();
+    let output = cmd
+        .args(["claim", "acquire", "README.md", "--ttl", "1h"])
+        .output()
+        .unwrap();
     assert!(output.status.success());
 }
 
@@ -137,7 +175,8 @@ fn claim_renew_extends_ttl() {
     // Acquire with short TTL
     let output = latch(dir)
         .args(["claim", "acquire", "Cargo.toml", "--ttl", "30m"])
-        .output().unwrap();
+        .output()
+        .unwrap();
     assert!(output.status.success());
     let stdout = String::from_utf8_lossy(&output.stdout);
     let json: serde_json::Value = serde_json::from_str(&stdout).unwrap();
@@ -147,7 +186,8 @@ fn claim_renew_extends_ttl() {
     // Renew with longer TTL
     let output = latch(dir)
         .args(["claim", "renew", &claim_id, "--ttl", "4h"])
-        .output().unwrap();
+        .output()
+        .unwrap();
     assert!(output.status.success());
     let stdout = String::from_utf8_lossy(&output.stdout);
     let json: serde_json::Value = serde_json::from_str(&stdout).unwrap();
@@ -164,7 +204,8 @@ fn claim_path_traversal_rejected() {
 
     let output = latch(dir)
         .args(["claim", "acquire", "../etc/passwd", "--ttl", "1h"])
-        .output().unwrap();
+        .output()
+        .unwrap();
     assert!(!output.status.success());
     assert_eq!(output.status.code(), Some(1)); // validation error
 }

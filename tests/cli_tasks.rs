@@ -23,9 +23,23 @@ fn task_add_and_list() {
 
     // Add a task
     let output = latch(dir)
-        .args(["task", "add", "--to", "bjarn", "--title", "Implement contracts module", "--priority", "high"])
-        .output().unwrap();
-    assert!(output.status.success(), "task add failed: {}", String::from_utf8_lossy(&output.stderr));
+        .args([
+            "task",
+            "add",
+            "--to",
+            "bjarn",
+            "--title",
+            "Implement contracts module",
+            "--priority",
+            "high",
+        ])
+        .output()
+        .unwrap();
+    assert!(
+        output.status.success(),
+        "task add failed: {}",
+        String::from_utf8_lossy(&output.stderr)
+    );
 
     let stdout = String::from_utf8_lossy(&output.stdout);
     let json: serde_json::Value = serde_json::from_str(&stdout).unwrap();
@@ -41,14 +55,20 @@ fn task_add_and_list() {
     assert_eq!(json["tasks"].as_array().unwrap().len(), 1);
 
     // List filtered by assignee
-    let output = latch(dir).args(["task", "list", "--for", "bjarn"]).output().unwrap();
+    let output = latch(dir)
+        .args(["task", "list", "--for", "bjarn"])
+        .output()
+        .unwrap();
     assert!(output.status.success());
     let stdout = String::from_utf8_lossy(&output.stdout);
     let json: serde_json::Value = serde_json::from_str(&stdout).unwrap();
     assert_eq!(json["tasks"].as_array().unwrap().len(), 1);
 
     // List for different actor (empty)
-    let output = latch(dir).args(["task", "list", "--for", "nobody"]).output().unwrap();
+    let output = latch(dir)
+        .args(["task", "list", "--for", "nobody"])
+        .output()
+        .unwrap();
     assert!(output.status.success());
     let stdout = String::from_utf8_lossy(&output.stdout);
     let json: serde_json::Value = serde_json::from_str(&stdout).unwrap();
@@ -64,21 +84,28 @@ fn task_lifecycle_open_taken_done() {
     // Add
     let output = latch(dir)
         .args(["task", "add", "--to", "nix", "--title", "Write tests"])
-        .output().unwrap();
+        .output()
+        .unwrap();
     assert!(output.status.success());
     let stdout = String::from_utf8_lossy(&output.stdout);
     let json: serde_json::Value = serde_json::from_str(&stdout).unwrap();
     let task_id = json["task"]["id"].as_str().unwrap().to_string();
 
     // Take
-    let output = latch(dir).args(["task", "take", &task_id]).output().unwrap();
+    let output = latch(dir)
+        .args(["task", "take", &task_id])
+        .output()
+        .unwrap();
     assert!(output.status.success());
     let stdout = String::from_utf8_lossy(&output.stdout);
     let json: serde_json::Value = serde_json::from_str(&stdout).unwrap();
     assert_eq!(json["status"], "taken");
 
     // Done
-    let output = latch(dir).args(["task", "done", &task_id]).output().unwrap();
+    let output = latch(dir)
+        .args(["task", "done", &task_id])
+        .output()
+        .unwrap();
     assert!(output.status.success());
     let stdout = String::from_utf8_lossy(&output.stdout);
     let json: serde_json::Value = serde_json::from_str(&stdout).unwrap();
@@ -100,13 +127,17 @@ fn task_cancel() {
 
     let output = latch(dir)
         .args(["task", "add", "--to", "bjarn", "--title", "Canceled task"])
-        .output().unwrap();
+        .output()
+        .unwrap();
     assert!(output.status.success());
     let stdout = String::from_utf8_lossy(&output.stdout);
     let json: serde_json::Value = serde_json::from_str(&stdout).unwrap();
     let task_id = json["task"]["id"].as_str().unwrap().to_string();
 
-    let output = latch(dir).args(["task", "cancel", &task_id]).output().unwrap();
+    let output = latch(dir)
+        .args(["task", "cancel", &task_id])
+        .output()
+        .unwrap();
     assert!(output.status.success());
 
     // Not in active list
@@ -124,15 +155,22 @@ fn task_take_wrong_status_fails() {
 
     let output = latch(dir)
         .args(["task", "add", "--to", "nix", "--title", "Status test"])
-        .output().unwrap();
+        .output()
+        .unwrap();
     let stdout = String::from_utf8_lossy(&output.stdout);
     let json: serde_json::Value = serde_json::from_str(&stdout).unwrap();
     let task_id = json["task"]["id"].as_str().unwrap().to_string();
 
     // Take it
-    latch(dir).args(["task", "take", &task_id]).output().unwrap();
+    latch(dir)
+        .args(["task", "take", &task_id])
+        .output()
+        .unwrap();
 
     // Try to take again (already taken, not open)
-    let output = latch(dir).args(["task", "take", &task_id]).output().unwrap();
+    let output = latch(dir)
+        .args(["task", "take", &task_id])
+        .output()
+        .unwrap();
     assert_eq!(output.status.code(), Some(3)); // not found (wrong status)
 }

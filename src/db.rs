@@ -1,6 +1,6 @@
-use std::path::{Path, PathBuf};
-use rusqlite::Connection;
 use chrono::Utc;
+use rusqlite::Connection;
+use std::path::{Path, PathBuf};
 use ulid::Ulid;
 
 use crate::LatchError;
@@ -60,7 +60,7 @@ fn configure_connection(conn: &Connection) -> Result<(), LatchError> {
     conn.execute_batch(
         "PRAGMA journal_mode = WAL;
          PRAGMA foreign_keys = ON;
-         PRAGMA busy_timeout = 5000;"
+         PRAGMA busy_timeout = 5000;",
     )?;
     Ok(())
 }
@@ -70,15 +70,14 @@ fn run_migrations(conn: &Connection) -> Result<(), LatchError> {
         "CREATE TABLE IF NOT EXISTS schema_migrations (
             version INTEGER PRIMARY KEY,
             applied_at TEXT NOT NULL
-        );"
+        );",
     )?;
 
-    let current_version: i64 = conn
-        .query_row(
-            "SELECT COALESCE(MAX(version), 0) FROM schema_migrations",
-            [],
-            |row| row.get(0),
-        )?;
+    let current_version: i64 = conn.query_row(
+        "SELECT COALESCE(MAX(version), 0) FROM schema_migrations",
+        [],
+        |row| row.get(0),
+    )?;
 
     if current_version < 1 {
         conn.execute_batch(include_str!("../migrations/001_initial.sql"))?;
@@ -91,6 +90,7 @@ fn run_migrations(conn: &Connection) -> Result<(), LatchError> {
     Ok(())
 }
 
+#[allow(clippy::too_many_arguments)]
 pub fn append_event(
     conn: &Connection,
     repo_id: &str,

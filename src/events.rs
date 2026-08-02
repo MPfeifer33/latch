@@ -10,13 +10,21 @@ pub fn handle_cmd(cmd: &EventsCommand, cli: &Cli) -> Result<(), LatchError> {
     let conn = db::open_workspace(&repo)?;
 
     match cmd {
-        EventsCommand::List { since, limit } => list_events(&conn, since.as_deref(), *limit, cli.is_json()),
+        EventsCommand::List { since, limit } => {
+            list_events(&conn, since.as_deref(), *limit, cli.is_json())
+        }
         EventsCommand::Show { id } => show_event(&conn, id, cli.is_json()),
     }
 }
 
-fn list_events(conn: &Connection, since: Option<&str>, limit: usize, is_json: bool) -> Result<(), LatchError> {
-    let mut query = String::from("SELECT id, created_at, actor, kind, entity_type, entity_id FROM events");
+fn list_events(
+    conn: &Connection,
+    since: Option<&str>,
+    limit: usize,
+    is_json: bool,
+) -> Result<(), LatchError> {
+    let mut query =
+        String::from("SELECT id, created_at, actor, kind, entity_type, entity_id FROM events");
     let mut params: Vec<Box<dyn rusqlite::types::ToSql>> = Vec::new();
 
     if let Some(since) = since {
@@ -45,10 +53,14 @@ fn list_events(conn: &Connection, since: Option<&str>, limit: usize, is_json: bo
     let events: Vec<serde_json::Value> = rows.filter_map(|r| r.ok()).collect();
 
     if is_json {
-        println!("{}", serde_json::to_string_pretty(&json!({ "ok": true, "events": events }))?);
+        println!(
+            "{}",
+            serde_json::to_string_pretty(&json!({ "ok": true, "events": events }))?
+        );
     } else {
         for e in &events {
-            println!("[{}] {} {} {} -> {}",
+            println!(
+                "[{}] {} {} {} -> {}",
                 e["created_at"].as_str().unwrap_or(""),
                 e["actor"].as_str().unwrap_or(""),
                 e["kind"].as_str().unwrap_or(""),
@@ -80,7 +92,10 @@ fn show_event(conn: &Connection, id: &str, is_json: bool) -> Result<(), LatchErr
     ).map_err(|_| LatchError::NotFound(format!("Event {id} not found")))?;
 
     if is_json {
-        println!("{}", serde_json::to_string_pretty(&json!({ "ok": true, "event": event }))?);
+        println!(
+            "{}",
+            serde_json::to_string_pretty(&json!({ "ok": true, "event": event }))?
+        );
     } else {
         println!("{}", serde_json::to_string_pretty(&event)?);
     }
