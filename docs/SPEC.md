@@ -295,6 +295,81 @@ Without `--for`, `status` is unfiltered and shows coordination state across all
 actors. With `--for <actor>`, it filters actor-specific claims and tasks while
 still including shared decisions, contracts, and hazards.
 
+### doctor
+
+```sh
+latch doctor --for bjarn --format json
+latch doctor --for bjarn --strict --format json
+```
+
+Returns an agent-facing preflight report:
+
+```json
+{
+  "ok": true,
+  "schema_version": "latch.doctor.v1",
+  "status": "caution",
+  "action_level": "coordinate",
+  "doctor": {
+    "schema_version": "latch.doctor.v1",
+    "status": "caution",
+    "action_level": "coordinate",
+    "actor": "bjarn",
+    "repo": "/path/to/repo",
+    "workspace": {
+      "initialized": true,
+      "path": "/path/to/repo/.agent-workspace/workspace.sqlite"
+    },
+    "gates": {
+      "workspace_initialized": true,
+      "active_claims": true,
+      "assigned_tasks": true,
+      "active_contracts": true,
+      "active_hazards": false
+    },
+    "counts": {
+      "active_claims": 1,
+      "assigned_tasks": 1,
+      "recent_decisions": 2,
+      "active_contracts": 1,
+      "active_hazards": 0
+    },
+    "advice": "...",
+    "recommendations": ["latch task list --for <actor>"],
+    "recommended_commands": [
+      {
+        "kind": "command",
+        "command": "latch task list --for <actor>",
+        "argv": ["latch", "task", "list", "--for", "<actor>"],
+        "label": "Review assigned Latch tasks",
+        "reason": "one or more open or taken tasks is assigned to this actor",
+        "reason_code": "assigned_tasks",
+        "required": false
+      }
+    ]
+  }
+}
+```
+
+Action levels:
+
+- `none`: workspace is initialized and no Latch-specific gate is raised
+- `initialize`: workspace ledger is missing; run `latch init`
+- `coordinate`: active tasks or claims should be reviewed
+- `review`: active hazards are present and must be read before automation
+
+Strict mode prints the same successful report and exits by gate severity:
+
+| Action level | Exit |
+| ------------ | ---- |
+| `none` | `0` |
+| `initialize` | `10` |
+| `coordinate` | `10` |
+| `review` | `20` |
+
+These are gate exits, not runtime errors. JSON should still contain `ok: true`
+unless Latch itself failed to run or the workspace database could not be opened.
+
 ### context
 
 ```sh

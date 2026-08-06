@@ -28,6 +28,7 @@ cargo run -- contract set validation-result v1 --body '{"success":true}' --consu
 
 # See the coordination picture.
 cargo run -- status
+cargo run -- doctor --for bjarn --format json
 cargo run -- context --for bjarn
 ```
 
@@ -166,6 +167,20 @@ latch note remove <note-id>
 Notes are durable until explicitly removed.
 
 ### Status And Context
+
+`doctor` is the agent preflight. It reports whether the workspace ledger exists,
+whether coordination state needs attention, and which next command or manual
+action an agent should take:
+
+```sh
+latch doctor --for bjarn --format json
+latch doctor --for bjarn --strict --format json
+```
+
+JSON output includes `schema_version: latch.doctor.v1`, `status`,
+`action_level`, `gates`, `counts`, and `recommended_commands`. Strict mode
+prints the same report and exits by gate severity: `0` for `none`, `10` for
+`initialize` or `coordinate`, and `20` for `review`.
 
 `status` is an operational view for humans and agents:
 

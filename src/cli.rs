@@ -83,6 +83,16 @@ pub enum Command {
         r#for: Option<String>,
     },
 
+    /// Agent preflight: workspace readiness plus coordination gates
+    Doctor {
+        /// Actor to generate the doctor report for
+        #[arg(long)]
+        r#for: Option<String>,
+        /// Exit non-zero according to action_level after printing the normal report
+        #[arg(long)]
+        strict: bool,
+    },
+
     /// Get compact prompt-injection context
     Context {
         /// Actor to generate context for

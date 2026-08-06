@@ -55,6 +55,18 @@ fn run(cli: &Cli) -> Result<(), LatchError> {
             context::show_status(&conn, actor.as_deref(), cli.is_json())?;
             Ok(())
         }
+        Command::Doctor {
+            r#for: actor,
+            strict,
+        } => {
+            let repo = cli.resolve_repo()?;
+            let actor_resolved = actor.clone().or_else(|| Some(cli.resolve_actor()));
+            let doctor = context::show_doctor(&repo, actor_resolved.as_deref(), cli.is_json())?;
+            if *strict {
+                std::process::exit(doctor.strict_exit_code());
+            }
+            Ok(())
+        }
         Command::Context { r#for: actor } => {
             let repo = cli.resolve_repo()?;
             let conn = db::open_workspace(&repo)?;
