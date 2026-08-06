@@ -350,6 +350,17 @@ fn recommended_commands_for(
         ));
     }
 
+    if gates.active_contracts {
+        commands.push(command_recommendation(
+            "latch contract list",
+            &["latch", "contract", "list"],
+            "Review active coordination contracts",
+            "active_contracts",
+            "one or more active contracts may define shared API or workflow boundaries",
+            false,
+        ));
+    }
+
     if commands.is_empty() && action_level == DoctorActionLevel::None {
         commands.push(manual_recommendation(
             "No Latch-specific action required",

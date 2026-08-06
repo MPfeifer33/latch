@@ -335,7 +335,10 @@ Returns an agent-facing preflight report:
       "active_hazards": 0
     },
     "advice": "...",
-    "recommendations": ["latch task list --for <actor>"],
+    "recommendations": [
+      "latch task list --for <actor>",
+      "latch contract list"
+    ],
     "recommended_commands": [
       {
         "kind": "command",
@@ -344,6 +347,15 @@ Returns an agent-facing preflight report:
         "label": "Review assigned Latch tasks",
         "reason": "one or more open or taken tasks is assigned to this actor",
         "reason_code": "assigned_tasks",
+        "required": false
+      },
+      {
+        "kind": "command",
+        "command": "latch contract list",
+        "argv": ["latch", "contract", "list"],
+        "label": "Review active coordination contracts",
+        "reason": "one or more active contracts may define shared API or workflow boundaries",
+        "reason_code": "active_contracts",
         "required": false
       }
     ]

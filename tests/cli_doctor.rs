@@ -89,6 +89,22 @@ fn doctor_surfaces_actor_tasks_and_workspace_hazards() {
             .unwrap(),
         "hazard add",
     );
+    assert_success(
+        &latch(dir, "helix")
+            .args([
+                "contract",
+                "set",
+                "doctor-contract",
+                "v1",
+                "--body",
+                r#"{"ok":true}"#,
+                "--consumer",
+                "bjarn",
+            ])
+            .output()
+            .unwrap(),
+        "contract set",
+    );
 
     let report = json_output(
         latch(dir, "bjarn")
@@ -103,6 +119,7 @@ fn doctor_surfaces_actor_tasks_and_workspace_hazards() {
     assert_eq!(report["doctor"]["action_level"], "review");
     assert_eq!(report["doctor"]["gates"]["assigned_tasks"], true);
     assert_eq!(report["doctor"]["gates"]["active_hazards"], true);
+    assert_eq!(report["doctor"]["gates"]["active_contracts"], true);
     assert_eq!(report["doctor"]["counts"]["assigned_tasks"], 1);
     assert_eq!(report["doctor"]["counts"]["active_hazards"], 1);
     assert!(report["doctor"]["recommended_commands"]
@@ -110,6 +127,11 @@ fn doctor_surfaces_actor_tasks_and_workspace_hazards() {
         .unwrap()
         .iter()
         .any(|command| command["reason_code"] == "active_hazards"));
+    assert!(report["doctor"]["recommended_commands"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .any(|command| command["reason_code"] == "active_contracts"));
 }
 
 #[test]
