@@ -14,9 +14,31 @@ pub fn handle(cmd: &NoteCommand, cli: &Cli) -> Result<(), LatchError> {
     let repo_id = db::compute_repo_id(&repo);
 
     match cmd {
-        NoteCommand::Add { kind, body } => add(&conn, &repo_id, &actor, kind, body, cli.is_json()),
+        NoteCommand::Add {
+            kind,
+            body,
+            body_arg,
+        } => {
+            let body = resolve_note_body(body.as_deref(), body_arg.as_deref())?;
+            add(&conn, &repo_id, &actor, kind, &body, cli.is_json())
+        }
         NoteCommand::List { kind } => list(&conn, kind.as_deref(), cli.is_json()),
         NoteCommand::Remove { id } => remove(&conn, &repo_id, &actor, id, cli.is_json()),
+    }
+}
+
+fn resolve_note_body(body: Option<&str>, body_arg: Option<&str>) -> Result<String, LatchError> {
+    match (body, body_arg) {
+        (Some(_), Some(_)) => Err(LatchError::Validation(
+            "Provide note body once, either as --body or positional BODY".to_string(),
+        )),
+        (Some(body), None) | (None, Some(body)) if !body.trim().is_empty() => Ok(body.to_string()),
+        (Some(_), None) | (None, Some(_)) => Err(LatchError::Validation(
+            "Note body cannot be empty".to_string(),
+        )),
+        (None, None) => Err(LatchError::Validation(
+            "Missing note body; use `latch note add \"body\"` or `--body \"body\"`".to_string(),
+        )),
     }
 }
 

@@ -77,6 +77,49 @@ fn note_add_and_list() {
 }
 
 #[test]
+fn note_add_accepts_positional_body_as_observation() {
+    let tmp = TempDir::new().unwrap();
+    let dir = tmp.path();
+    init_workspace(dir);
+
+    let output = latch(dir)
+        .args(["note", "add", "Quick dogfood note"])
+        .output()
+        .unwrap();
+    assert!(
+        output.status.success(),
+        "quick note add failed: {}",
+        String::from_utf8_lossy(&output.stderr)
+    );
+    let stdout = String::from_utf8_lossy(&output.stdout);
+    let json: serde_json::Value = serde_json::from_str(&stdout).unwrap();
+    assert_eq!(json["ok"], true);
+    assert_eq!(json["note"]["kind"], "observation");
+
+    let output = latch(dir).args(["note", "list"]).output().unwrap();
+    assert!(output.status.success());
+    let stdout = String::from_utf8_lossy(&output.stdout);
+    let json: serde_json::Value = serde_json::from_str(&stdout).unwrap();
+    assert_eq!(json["notes"][0]["kind"], "observation");
+    assert_eq!(json["notes"][0]["body"], "Quick dogfood note");
+}
+
+#[test]
+fn note_add_rejects_duplicate_body_sources() {
+    let tmp = TempDir::new().unwrap();
+    let dir = tmp.path();
+    init_workspace(dir);
+
+    let output = latch(dir)
+        .args(["note", "add", "positional", "--body", "flagged"])
+        .output()
+        .unwrap();
+    assert!(!output.status.success());
+    assert_eq!(output.status.code(), Some(1));
+    assert!(String::from_utf8_lossy(&output.stderr).contains("Provide note body once"));
+}
+
+#[test]
 fn note_remove() {
     let tmp = TempDir::new().unwrap();
     let dir = tmp.path();

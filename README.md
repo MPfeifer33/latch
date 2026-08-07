@@ -158,6 +158,7 @@ Valid kinds:
 - `observation`
 
 ```sh
+latch note add "Build takes 3 minutes on first run"
 latch note add --kind hazard --body "cargo test can dirty tracked target artifacts"
 latch note list
 latch note list --kind hazard

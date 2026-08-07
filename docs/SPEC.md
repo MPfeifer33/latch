@@ -479,6 +479,7 @@ latch task cancel task_01JZ...
 ### notes
 
 ```sh
+latch note add "quick observation for the next agent"
 latch note add --kind hazard --body "cargo test mutates tracked target artifacts"
 latch note list --kind hazard
 ```

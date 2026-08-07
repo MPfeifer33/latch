@@ -246,10 +246,15 @@ pub enum TaskCommand {
 pub enum NoteCommand {
     /// Add a note
     Add {
-        #[arg(long)]
+        /// Note kind: hazard, handoff, or observation.
+        #[arg(long, default_value = "observation")]
         kind: String,
+        /// Note body. If omitted, the positional BODY quick path is used.
         #[arg(long)]
-        body: String,
+        body: Option<String>,
+        /// Quick note body, equivalent to --body with --kind observation.
+        #[arg(value_name = "BODY")]
+        body_arg: Option<String>,
     },
     /// List notes
     List {
