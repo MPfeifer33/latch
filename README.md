@@ -8,6 +8,19 @@ and repo hazards.
 The core idea is simple: every mutation appends an event, and current state is
 stored in small SQLite tables under the project itself.
 
+## Suite Context
+
+Latch is part of a local-first agent tool suite centered on
+[Switchboard](https://github.com/MPfeifer33/switchboard):
+
+- [Probe](https://github.com/MPfeifer33/probe): project preflight and drift
+  scanner
+- [Latch](https://github.com/MPfeifer33/latch): repo-local coordination ledger
+- [Atlas](https://github.com/MPfeifer33/atlas): codebase graph and impact map
+- [Sentinel](https://github.com/MPfeifer33/sentinel): regression risk watcher
+- [Witness](https://github.com/MPfeifer33/witness): reproducible command
+  evidence recorder
+
 ## Quickstart
 
 ```sh
@@ -33,6 +46,13 @@ cargo run -- context --for bjarn
 ```
 
 After installation, replace `cargo run --` with `latch`.
+
+Install the CLI from a local checkout:
+
+```sh
+cargo install --path .
+latch --help
+```
 
 ## Storage
 
@@ -242,3 +262,9 @@ Important MVP choices:
 - TTL-based claims with explicit renew/release
 - durable hazards until explicit removal
 - JSON-first CLI output except for prompt-oriented `context`
+
+## License
+
+Licensed under the Apache License, Version 2.0. See [LICENSE](LICENSE) and
+[NOTICE](NOTICE). Redistributed or derivative works must preserve the NOTICE
+attribution required by the license.

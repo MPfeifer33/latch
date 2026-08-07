@@ -3,6 +3,7 @@ name = "latch"
 version = "0.1.0"
 edition = "2021"
 description = "Project-scoped coordination ledger for collaborating agents"
+license = "Apache-2.0"
 
 [dependencies]
 clap = { version = "4", features = ["derive"] }
