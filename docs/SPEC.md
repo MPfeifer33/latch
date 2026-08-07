@@ -1,6 +1,6 @@
 # latch Spec
 
-Status: Draft v0.1 for Nix/Bjarn review
+Status: Draft v0.1 for Reviewer/Builder review
 Project: latch
 Purpose: Project-scoped coordination ledger for collaborating agents
 
@@ -95,7 +95,7 @@ Every mutating command appends one event.
   "id": "01JZ...ULID",
   "repo_id": "sha256-of-root-path-or-git-origin",
   "created_at": "2026-06-22T03:20:00Z",
-  "actor": "bjarn",
+  "actor": "builder",
   "kind": "claim.acquired",
   "entity_type": "claim",
   "entity_id": "01JZ...ULID",
@@ -129,7 +129,7 @@ Claim fields:
 ```json
 {
   "id": "claim_01JZ...",
-  "owner": "bjarn",
+  "owner": "builder",
   "path": "frontend/app.js",
   "scope": "file",
   "intent": "validation summary polish",
@@ -163,7 +163,7 @@ A decision records an agreed architectural or process choice.
   "id": "decision_01JZ...",
   "title": "Validation result changes are additive",
   "body": "Existing frontend fields remain stable; structured diagnostics append new fields.",
-  "participants": ["bjarn", "nix"],
+  "participants": ["builder", "reviewer"],
   "tags": ["frontend", "backend-contract"],
   "status": "active",
   "created_at": "2026-06-22T03:25:00Z",
@@ -185,8 +185,8 @@ A contract records a schema, API shape, file boundary, or behavior agreement.
   "version": "v1",
   "format": "json",
   "body": {},
-  "owner": "nix",
-  "consumers": ["bjarn"],
+  "owner": "reviewer",
+  "consumers": ["builder"],
   "status": "active",
   "created_at": "2026-06-22T03:30:00Z"
 }
@@ -209,8 +209,8 @@ A task is an async handoff item.
   "id": "task_01JZ...",
   "title": "Send get_toolchain_status shape",
   "body": "Frontend may surface a readiness badge later.",
-  "assigned_to": "nix",
-  "created_by": "bjarn",
+  "assigned_to": "reviewer",
+  "created_by": "builder",
   "status": "open",
   "priority": "normal",
   "claim_refs": [],
@@ -280,7 +280,7 @@ Creates `.agent-workspace/workspace.sqlite`, applies migrations, and writes a
 
 ```sh
 latch status
-latch status --for bjarn
+latch status --for builder
 ```
 
 Returns current coordination state:
@@ -298,8 +298,8 @@ still including shared decisions, contracts, and hazards.
 ### doctor
 
 ```sh
-latch doctor --for bjarn --format json
-latch doctor --for bjarn --strict --format json
+latch doctor --for builder --format json
+latch doctor --for builder --strict --format json
 ```
 
 Returns an agent-facing preflight report:
@@ -314,7 +314,7 @@ Returns an agent-facing preflight report:
     "schema_version": "latch.doctor.v1",
     "status": "caution",
     "action_level": "coordinate",
-    "actor": "bjarn",
+    "actor": "builder",
     "repo": "/path/to/repo",
     "workspace": {
       "initialized": true,
@@ -385,7 +385,7 @@ unless Latch itself failed to run or the workspace database could not be opened.
 ### context
 
 ```sh
-latch context --for bjarn --format text
+latch context --for builder --format text
 ```
 
 Returns a compact prompt-injection summary. This is an MVP feature because it
@@ -398,7 +398,7 @@ structured context.
 Text shape:
 
 ```text
-Latch context for bjarn in learnRust:
+Latch context for builder in example-repo:
 - Active claims: frontend/app.js until 05:20Z (validation summary polish)
 - Assigned tasks: review validation-result v2
 - Recent decisions: Validation result changes are additive
@@ -410,8 +410,8 @@ JSON shape:
 
 ```json
 {
-  "actor": "bjarn",
-  "repo": "/home/mpfeifer/projects/learnRust",
+  "actor": "builder",
+  "repo": "/path/to/projects/example-repo",
   "active_claims": [],
   "assigned_tasks": [],
   "recent_decisions": [],
@@ -440,7 +440,7 @@ Conflict response:
     "conflicts": [
       {
         "id": "claim_01JZ...",
-        "owner": "nix",
+        "owner": "reviewer",
         "path": "frontend/",
         "expires_at": "2026-06-22T05:20:00Z"
       }
@@ -452,7 +452,7 @@ Conflict response:
 ### decisions
 
 ```sh
-latch decision add --title "Validation result changes are additive" --body-file decision.md --tag frontend --tag backend-contract --participant bjarn --participant nix
+latch decision add --title "Validation result changes are additive" --body-file decision.md --tag frontend --tag backend-contract --participant builder --participant reviewer
 latch decision list
 latch decision show decision_01JZ...
 latch decision supersede decision_01JZ... --title "Validation result v2" --body-file decision.md
@@ -461,7 +461,7 @@ latch decision supersede decision_01JZ... --title "Validation result v2" --body-
 ### contracts
 
 ```sh
-latch contract set validation-result v1 --body-format json --body-file validation-result.v1.json --consumer bjarn --owner nix
+latch contract set validation-result v1 --body-format json --body-file validation-result.v1.json --consumer builder --owner reviewer
 latch contract list
 latch contract get validation-result v1
 ```
@@ -469,8 +469,8 @@ latch contract get validation-result v1
 ### tasks
 
 ```sh
-latch task add --to nix --title "Send command shapes" --body "Frontend may surface them later"
-latch task list --for nix
+latch task add --to reviewer --title "Send command shapes" --body "Frontend may surface them later"
+latch task list --for reviewer
 latch task take task_01JZ...
 latch task done task_01JZ...
 latch task cancel task_01JZ...

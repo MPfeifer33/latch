@@ -3,7 +3,7 @@
 Canonical plan:
 
 ```text
-/home/mpfeifer/projects/switchboard/docs/LATCH-INTEGRATION-PLAN.md
+/path/to/projects/switchboard/docs/LATCH-INTEGRATION-PLAN.md
 ```
 
 Latch's role in the integration is repo-local coordination truth:
@@ -42,17 +42,17 @@ switchboard --transport store \
   --latch-bin <path-to-latch>
 
 switchboard --transport store \
-  project actor-map project.latch agent.bjarn bjarn
+  project actor-map project.latch agent.builder builder
 
 switchboard --transport store \
   project context project.latch \
-  --for agent.bjarn
+  --for agent.builder
 
 switchboard --transport store \
   latch promote evt_000000000123 \
   --as task \
-  --to agent.helix \
-  --by agent.bjarn
+  --to agent.reviewer \
+  --by agent.builder
 ```
 
 Switchboard stores bindings and promotion receipts in its own database. Latch

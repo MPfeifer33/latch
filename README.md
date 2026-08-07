@@ -30,19 +30,19 @@ cargo build
 cargo run -- init
 
 # Tell latch who is speaking.
-export LATCH_ACTOR=bjarn
+export LATCH_ACTOR=builder
 
 # Claim files while you work.
 cargo run -- claim acquire src/context.rs --intent "context aggregator" --ttl 2h
 
 # Record shared decisions and contracts.
 cargo run -- decision add --title "Context defaults to text" --body "Prompt injection is the first consumer."
-cargo run -- contract set validation-result v1 --body '{"success":true}' --consumer nix
+cargo run -- contract set validation-result v1 --body '{"success":true}' --consumer reviewer
 
 # See the coordination picture.
 cargo run -- status
-cargo run -- doctor --for bjarn --format json
-cargo run -- context --for bjarn
+cargo run -- doctor --for builder --format json
+cargo run -- context --for builder
 ```
 
 After installation, replace `cargo run --` with `latch`.
@@ -81,7 +81,7 @@ Commands resolve the actor in this order:
 Example:
 
 ```sh
-latch --actor nix task add --to bjarn --title "Review context output"
+latch --actor reviewer task add --to builder --title "Review context output"
 ```
 
 ## Output
@@ -96,8 +96,8 @@ latch status --format json
 primary use is prompt injection after an agent cold start:
 
 ```sh
-latch context --for bjarn
-latch context --for bjarn --format json
+latch context --for builder
+latch context --for builder --format json
 ```
 
 ## Commands
@@ -122,9 +122,9 @@ reverse is also true.
 Tasks are async handoffs between agents.
 
 ```sh
-latch task add --to bjarn --title "Wire context status" --priority high
+latch task add --to builder --title "Wire context status" --priority high
 latch task list
-latch task list --for bjarn
+latch task list --for builder
 latch task take <task-id>
 latch task done <task-id>
 latch task cancel <task-id>
@@ -140,8 +140,8 @@ latch decision add \
   --title "Validation result changes are additive" \
   --body-file decision.md \
   --tag backend-contract \
-  --participant bjarn \
-  --participant nix
+  --participant builder \
+  --participant reviewer
 
 latch decision list
 latch decision show <decision-id>
@@ -157,8 +157,8 @@ ownership agreements.
 latch contract set validation-result v1 \
   --body-format json \
   --body-file validation-result.v1.json \
-  --consumer bjarn \
-  --owner nix
+  --consumer builder \
+  --owner reviewer
 
 latch contract list
 latch contract get validation-result v1
@@ -194,8 +194,8 @@ whether coordination state needs attention, and which next command or manual
 action an agent should take:
 
 ```sh
-latch doctor --for bjarn --format json
-latch doctor --for bjarn --strict --format json
+latch doctor --for builder --format json
+latch doctor --for builder --strict --format json
 ```
 
 JSON output includes `schema_version: latch.doctor.v1`, `status`,
@@ -207,7 +207,7 @@ prints the same report and exits by gate severity: `0` for `none`, `10` for
 
 ```sh
 latch status
-latch status --for bjarn
+latch status --for builder
 ```
 
 Without `--for`, it shows all active coordination state. With `--for`, it
@@ -217,7 +217,7 @@ contracts, and hazards.
 `context` is a compact handoff view:
 
 ```sh
-latch context --for bjarn
+latch context --for builder
 ```
 
 It includes:
@@ -252,7 +252,7 @@ latch events show <event-id>
 The full design draft is in [docs/SPEC.md](docs/SPEC.md).
 Switchboard integration notes are in [docs/SWITCHBOARD-INTEGRATION.md](docs/SWITCHBOARD-INTEGRATION.md);
 the canonical cross-project plan lives at
-`/home/mpfeifer/projects/switchboard/docs/LATCH-INTEGRATION-PLAN.md`.
+`/path/to/projects/switchboard/docs/LATCH-INTEGRATION-PLAN.md`.
 
 Important MVP choices:
 
