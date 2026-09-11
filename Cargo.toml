@@ -6,7 +6,7 @@ description = "Project-scoped coordination ledger for collaborating agents"
 license = "Apache-2.0"
 
 [dependencies]
-agent-tools-core = { path = "../agent-tools-core" }
+agent-tools-core = { git = "https://github.com/MPfeifer33/agent-tools-core", tag = "v0.1.0" }
 clap = { version = "4", features = ["derive"] }
 rusqlite = { version = "0.31", features = ["bundled"] }
 serde = { version = "1", features = ["derive"] }

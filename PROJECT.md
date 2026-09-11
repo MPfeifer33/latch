@@ -4,9 +4,7 @@
 
 **Status:** MVP surfaces implemented — compiles, CLI routes, DB layer with migrations, claims/tasks/notes/events, decisions/contracts, and status/context/doctor aggregators are implemented. Full integration suite passes (29 tests). Shared plumbing (repo resolution, `--format`, exit codes, error report) now comes from `agent-tools-core`.
 
-**Tech:** Rust 2021, clap 4, rusqlite (bundled SQLite), serde/serde_json, chrono, ulid, thiserror, whoami, agent-tools-core (path dep).
 
-**Dependency note:** `agent-tools-core` is a path dependency (`../agent-tools-core`). A standalone clone needs that repo checked out beside this one until Mark decides to publish the crate (crates.io or git dep).
 
 **Storage:** `.agent-workspace/workspace.sqlite` under repo root. WAL mode, append-only event log + materialized state tables.
 
@@ -24,6 +22,8 @@
 | contracts.rs | Bjarn | Done |
 | context.rs | Bjarn | Done |
 | output.rs | Shared | Minimal |
+
+Depends on [`agent-tools-core`](https://github.com/MPfeifer33/agent-tools-core) by git tag (`v0.1.0`); standalone clones build without anything beside them.
 
 ## Build
 
