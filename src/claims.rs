@@ -123,22 +123,8 @@ fn acquire(
 
     let conflicts = check_conflicts(conn, &path)?;
     if !conflicts.is_empty() {
-        if is_json {
-            let err = json!({
-                "ok": false,
-                "error": {
-                    "code": "claim_conflict",
-                    "message": "Path is already claimed",
-                    "conflicts": conflicts,
-                }
-            });
-            eprintln!("{}", serde_json::to_string_pretty(&err)?);
-        } else {
-            eprintln!("error: claim conflict on {path}");
-        }
-        return Err(LatchError::ClaimConflict(format!(
-            "Path {path} is already claimed"
-        )));
+        // main() prints the single conflict document (JSON or text) from this error.
+        return Err(LatchError::ClaimConflict { path, conflicts });
     }
 
     let now = Utc::now();

@@ -429,7 +429,7 @@ latch claim renew claim_01JZ... --ttl 2h
 latch claim release claim_01JZ...
 ```
 
-Conflict response:
+Conflict response (exactly one document on stderr, exit code `2`):
 
 ```json
 {

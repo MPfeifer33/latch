@@ -9,6 +9,7 @@ mod notes;
 mod output;
 mod tasks;
 
+use agent_tools_core::{exit_with, ExitCode, RepoError};
 use clap::Parser;
 use cli::{Cli, Command};
 
@@ -18,25 +19,8 @@ fn main() {
     match result {
         Ok(()) => {}
         Err(e) => {
-            let code = e.exit_code();
-            if cli.is_json() {
-                let err_json = serde_json::json!({
-                    "ok": false,
-                    "error": {
-                        "code": e.error_code(),
-                        "message": e.to_string(),
-                    }
-                });
-                eprintln!(
-                    "{}",
-                    serde_json::to_string_pretty(&err_json).unwrap_or_else(|_| format!(
-                        "{{\"ok\":false,\"error\":{{\"message\":\"{e}\"}}}}"
-                    ))
-                );
-            } else {
-                eprintln!("error: {e}");
-            }
-            std::process::exit(code);
+            e.report(cli.is_json());
+            exit_with(e.exit_code());
         }
     }
 }
@@ -63,7 +47,7 @@ fn run(cli: &Cli) -> Result<(), LatchError> {
             let actor_resolved = actor.clone().or_else(|| Some(cli.resolve_actor()));
             let doctor = context::show_doctor(&repo, actor_resolved.as_deref(), cli.is_json())?;
             if *strict {
-                std::process::exit(doctor.strict_exit_code());
+                exit_with(doctor.strict_exit_code());
             }
             Ok(())
         }
@@ -92,8 +76,13 @@ fn run(cli: &Cli) -> Result<(), LatchError> {
 pub enum LatchError {
     #[error("{0}")]
     Validation(String),
-    #[error("claim conflict: {0}")]
-    ClaimConflict(String),
+    /// The path is held by active claims; `conflicts` carries their JSON rows
+    /// so the JSON error report can include them in the one document it prints.
+    #[error("claim conflict on {path}")]
+    ClaimConflict {
+        path: String,
+        conflicts: Vec<serde_json::Value>,
+    },
     #[error("not found: {0}")]
     NotFound(String),
     #[error("storage error: {0}")]
@@ -106,25 +95,51 @@ pub enum LatchError {
     Io(#[from] std::io::Error),
 }
 
+impl From<RepoError> for LatchError {
+    fn from(err: RepoError) -> Self {
+        LatchError::Io(err.into())
+    }
+}
+
 impl LatchError {
     pub fn exit_code(&self) -> i32 {
         match self {
-            LatchError::Validation(_) => 1,
-            LatchError::ClaimConflict(_) => 2,
-            LatchError::NotFound(_) => 3,
-            LatchError::Storage(_) | LatchError::Db(_) | LatchError::Io(_) => 4,
-            LatchError::Json(_) => 1,
+            LatchError::Validation(_) => ExitCode::Validation.code(),
+            LatchError::ClaimConflict { .. } => ExitCode::ClaimConflict.code(),
+            LatchError::NotFound(_) => ExitCode::NotFound.code(),
+            LatchError::Storage(_) | LatchError::Db(_) | LatchError::Io(_) => {
+                ExitCode::Storage.code()
+            }
+            LatchError::Json(_) => ExitCode::Validation.code(),
         }
     }
 
     pub fn error_code(&self) -> &'static str {
         match self {
             LatchError::Validation(_) => "validation_error",
-            LatchError::ClaimConflict(_) => "claim_conflict",
+            LatchError::ClaimConflict { .. } => "claim_conflict",
             LatchError::NotFound(_) => "not_found",
             LatchError::Storage(_) | LatchError::Db(_) => "storage_error",
             LatchError::Io(_) => "io_error",
             LatchError::Json(_) => "json_error",
+        }
+    }
+
+    /// Print exactly one error report on stderr: the shared
+    /// `{"ok": false, "error": {code, message}}` document in JSON mode (a claim
+    /// conflict adds its `conflicts` rows to that same document, per SPEC.md),
+    /// or `error: <message>` in text mode.
+    pub fn report(&self, is_json: bool) {
+        match self {
+            LatchError::ClaimConflict { conflicts, .. } if is_json => {
+                let mut value = agent_tools_core::error_value(self.error_code(), "Path is already claimed");
+                value["error"]["conflicts"] = serde_json::Value::Array(conflicts.clone());
+                eprintln!(
+                    "{}",
+                    serde_json::to_string_pretty(&value).unwrap_or_else(|_| value.to_string())
+                );
+            }
+            _ => agent_tools_core::report_error(is_json, self.error_code(), &self.to_string()),
         }
     }
 }

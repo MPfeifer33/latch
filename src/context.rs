@@ -1,3 +1,4 @@
+use agent_tools_core::ExitCode;
 use chrono::Utc;
 use rusqlite::{types::ToSql, Connection};
 use serde::Serialize;
@@ -20,9 +21,11 @@ pub enum DoctorActionLevel {
 impl DoctorActionLevel {
     pub fn strict_exit_code(self) -> i32 {
         match self {
-            DoctorActionLevel::None => 0,
-            DoctorActionLevel::Initialize | DoctorActionLevel::Coordinate => 10,
-            DoctorActionLevel::Review => 20,
+            DoctorActionLevel::None => ExitCode::Success.code(),
+            DoctorActionLevel::Initialize | DoctorActionLevel::Coordinate => {
+                ExitCode::GateAct.code()
+            }
+            DoctorActionLevel::Review => ExitCode::GateReview.code(),
         }
     }
 

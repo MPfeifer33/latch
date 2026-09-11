@@ -21,8 +21,7 @@ pub fn success_message(msg: &str, path: &Path, is_json: bool) {
 }
 
 pub fn print_json<T: Serialize>(value: &T) -> Result<(), LatchError> {
-    println!("{}", serde_json::to_string_pretty(value)?);
-    Ok(())
+    Ok(agent_tools_core::print_raw_json(value)?)
 }
 
 pub fn print_json_value(value: serde_json::Value) -> Result<(), LatchError> {
