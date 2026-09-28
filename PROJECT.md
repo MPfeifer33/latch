@@ -46,6 +46,8 @@ cargo test
 
 ## Last Updated
 
+2026-09-28: README gained an "In ten seconds" block with a real invocation and its output above the fold.
+
 2026-09-11 — Moved repo resolution, `--format`, exit codes, and the stderr error report onto `agent-tools-core`; a claim conflict now prints exactly one JSON document (with `conflicts[]`, exit 2 unchanged); added `--version` and conflict tests. `cargo test` passes with 29 integration tests.
 
 2026-08-06 — Added agent-first `doctor` preflight; `cargo test` passes with 24 integration tests.

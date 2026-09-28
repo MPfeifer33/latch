@@ -8,6 +8,34 @@ and repo hazards.
 The core idea is simple: every mutation appends an event, and current state is
 stored in small SQLite tables under the project itself.
 
+## In ten seconds
+
+```bash
+cargo install --path .
+latch init
+latch --actor nix claim acquire src/runtime
+latch --actor nix status
+```
+
+```text
+Latch status
+Active claims:
+  - nix src/runtime until 2026-09-29T00:13:25Z
+Tasks:
+  none
+Recent decisions:
+  none
+Contracts:
+  none
+Hazards:
+  none
+```
+
+Claims, decisions, contracts, tasks, and hazards live in small SQLite tables
+under the project, every mutation appended to an event log. `latch context`
+prints the same state as a compact block for a prompt, so a second agent
+starts its session knowing what the first one is holding.
+
 ## Suite Context
 
 Latch is part of a local-first agent tool suite centered on
